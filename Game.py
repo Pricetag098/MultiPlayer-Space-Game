@@ -361,7 +361,6 @@ while True:
         
 
         pygame.display.flip()
-        #allows the app to continue out of the game loop
         clock.tick(60)
     pygame.display.flip()
     #allows the app to continue out of the game loop
