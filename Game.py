@@ -13,6 +13,9 @@ WHITE    = ( 255, 255, 255)
 
 PI = 3.141592653
 
+astroidImg = pygame.image.load("assets\\Astroid.png")
+p1Img = pygame.image.load("assets\\TestShip.png")
+p2Img = pygame.image.load("assets\\TestShip2.png")
 #setup
 n = None
 size = (500, 600)
@@ -44,12 +47,13 @@ allBulletPos = []
 
 
 class Astroid():
-    def __init__(self):
+    def __init__(self,icon):
         
         self.xSpeed = random.randrange(-5,5)
         self.ySpeed = random.randrange(2,5)
         self.xPos = random.randrange(0,500)
         self.yPos = 1
+        self.img = icon
         self.alive = True
         self.found = False
         self.offset = 0
@@ -59,8 +63,9 @@ class Astroid():
             self.offset =  math.sin(pygame.time.get_ticks()*0.001) * 5
             self.xSpeed = self.offset
             self.xPos +=self.xSpeed
-            self.yPos += self.ySpeed      
-            pygame.draw.ellipse(screen, self.colour, [self.xPos, self.yPos, 50, 50])
+            self.yPos += self.ySpeed 
+            screen.blit(self.img, [self.xPos, self.yPos])
+            #pygame.draw.ellipse(screen, self.colour, [self.xPos, self.yPos, 50, 50])
     def getPos(self):
         return [self.xPos,self.yPos,self.colour]
 
@@ -81,8 +86,7 @@ class player(pygame.sprite.Sprite):
         self.leftHeld = False
         self.rightHeld =False
         self.cannonFiring = True
-        self.spaceship = pygame.image.load("assets\ship.png")
-        self.spaceship.set_colorkey(WHITE)
+        #self.spaceship.set_colorkey(WHITE)
     def Move(self):
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT: 
@@ -123,7 +127,14 @@ class player(pygame.sprite.Sprite):
                 self.xPos += self.xSpeed
         self.update()
     def update(self):
-        screen.blit(self.spaceship, [self.xPos, self.yPos])
+        global data
+        global p1Img
+        global p2Img
+        if data['player'] == 1:
+            screen.blit(p1Img, [self.xPos, self.yPos])
+        else:
+            screen.blit(p2Img, [self.xPos, self.yPos])
+
 
     def Shoot(self):
         bullets.append(Bullet(self.xPos,self.yPos,self.cannonFiring, self))
@@ -180,7 +191,7 @@ def sendData():
 #spawns the astroids  
 def spawn(data):
     if data['inGame'] == True:
-        currentAstroid = Astroid()
+        currentAstroid = Astroid(astroidImg)
         astroids.append(currentAstroid)
     pass
 #draws the bullets from the server
@@ -191,7 +202,8 @@ def drawServBullets(data):
 #draws the astroids from the server
 def drawAstroids(data):
     for a in data['astroids']:
-        pygame.draw.ellipse(screen, a[2], [a[0], a[1], 50, 50])
+        screen.blit (astroidImg,[a[0], a[1]])
+        #pygame.draw.ellipse(screen, a[2], [a[0], a[1], 50, 50])
         pass
     
 def doAstroidCollision(a):
@@ -234,6 +246,7 @@ while True:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 done = False
+    #screen.blit(testIMG, [100, 100])
     ingame = False     
     while done == False:
         
