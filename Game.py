@@ -14,8 +14,12 @@ WHITE    = ( 255, 255, 255)
 PI = 3.141592653
 
 astroidImg = pygame.image.load("assets\\Astroid.png")
-p1Img = pygame.image.load("assets\\TestShip.png")
-p2Img = pygame.image.load("assets\\TestShip2.png")
+
+playerImgs = {
+'p1': pygame.image.load("assets\\TestShip.png"),
+'p2': pygame.image.load("assets\\TestShip2.png"),
+'null': pygame.image.load("assets\\NullShip.png")
+}
 #setup
 n = None
 size = (500, 600)
@@ -57,6 +61,7 @@ class Astroid():
         self.alive = True
         self.found = False
         self.offset = 0
+        
         self.colour = (random.randrange(50,250),random.randrange(50,250),random.randrange(50,250))
     def update(self):
         if self.alive:
@@ -74,7 +79,7 @@ class Astroid():
         
 
 class player(pygame.sprite.Sprite):
-    def __init__(self,x,y):
+    def __init__(self,x,y,imgs):
         self.xPos = x
         self.yPos = y
         self.xSpeed = 5
@@ -87,6 +92,10 @@ class player(pygame.sprite.Sprite):
         self.rightHeld =False
         self.cannonFiring = True
         #self.spaceship.set_colorkey(WHITE)
+        self.useNullImg = True
+        self.isP1 = False
+        self.imgs = imgs
+        self.img = imgs['null']
     def Move(self):
         for event in pygame.event.get(): 
             if event.type == pygame.QUIT: 
@@ -127,13 +136,14 @@ class player(pygame.sprite.Sprite):
                 self.xPos += self.xSpeed
         self.update()
     def update(self):
-        global data
-        global p1Img
-        global p2Img
-        if data['player'] == 1:
-            screen.blit(p1Img, [self.xPos, self.yPos])
+
+        if self.useNullImg:
+            self.img = self.imgs['null']
+        elif self.isP1:
+            self.img = self.imgs['p1']
         else:
-            screen.blit(p2Img, [self.xPos, self.yPos])
+            self.img = self.imgs['p2']
+        screen.blit(self.img, [self.xPos, self.yPos])
 
 
     def Shoot(self):
@@ -233,8 +243,8 @@ def doLocalAstroidCollision(a):
 
 
 startPos = [225,500]
-p = player(startPos[0],startPos[1])
-p2 = player(255,500)
+p = player(startPos[0],startPos[1],playerImgs)
+p2 = player(255,500,playerImgs)
 ip = input('Ip: ')
 n = Network(ip)
 
@@ -263,6 +273,13 @@ while True:
         except:
             data = oldData
             
+        p.useNullImg = False
+        p.isP1 = data['player'] == 1
+        p2.useNullImg = False
+        p2.isP1 = not data['player'] == 1
+
+
+
         drawServBullets(data)
         drawAstroids(data)
 

@@ -41,14 +41,14 @@ game_state =[
         'pos':[255,500],
         'bullets' : [],
         'astroids' : [], 
-        'player' : 1,
+        'player' : 2,
         'inGame' : False
     },
     {
         'pos':[255,500],
         'bullets' : [],
         'astroids' : [],
-        'player' : 2,
+        'player' : 1,
         'inGame' : False
     }
 ]
