@@ -41,6 +41,7 @@ game_state =[
         'pos':[255,500],
         'bullets' : [],
         'astroids' : [], 
+        'speedyAstroids' : [],
         'player' : 2,
         'inGame' : False
     },
@@ -48,6 +49,7 @@ game_state =[
         'pos':[255,500],
         'bullets' : [],
         'astroids' : [],
+        'speedyAstroids' : [],
         'player' : 1,
         'inGame' : False
     }
@@ -88,6 +90,7 @@ def threaded_client(conn, player):
                 #print(game_state[int(player)]['pos'])
                 game_state[player]['bullets'] = data['bullets']
                 game_state[player]['astroids'] = data['astroids']
+                game_state[player]['speedyAstroids'] = data['speedyAstroids']
                 game_state[player]['inGame'] = data['inGame']
             except:
                 pass

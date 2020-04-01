@@ -13,7 +13,12 @@ WHITE    = ( 255, 255, 255)
 
 PI = 3.141592653
 
-astroidImg = pygame.image.load("assets\\Astroid.png")
+
+astroidImgs = {
+    'defult' : pygame.image.load("assets\\Astroid.png"),
+    'speedy' : pygame.image.load("assets\\AltAstroid.png")
+    
+}
 
 playerImgs = {
 'p1': pygame.image.load("assets\\TestShip.png"),
@@ -41,8 +46,11 @@ dead = True
 bullet = None
 astroid = None
 bullets = []
+
 astroids = []
 newAstroidList = [[25,580]]
+speedyAstroids = []
+newSpeedyAstroids = []
 
 oldData = None
 #current score
@@ -74,8 +82,29 @@ class Astroid():
     def getPos(self):
         return [self.xPos,self.yPos,self.colour]
 
-    def detectCollisions(self):
-        pass
+class speedyAstroid():
+    def __init__(self,icon):
+        
+        self.xSpeed = random.randrange(-2,2)
+        self.ySpeed = random.randrange(10,12)
+        self.xPos = random.randrange(0,500)
+        self.yPos = 1
+        self.img = icon
+        self.alive = True
+        self.found = False
+        self.offset = 0
+        
+        self.colour = (random.randrange(50,250),random.randrange(50,250),random.randrange(50,250))
+    def update(self):
+        if self.alive:
+            #self.offset =  math.sin(pygame.time.get_ticks()*0.001) * 5
+            #self.xSpeed = self.offset
+            self.xPos +=self.xSpeed
+            self.yPos += self.ySpeed 
+            screen.blit(self.img, [self.xPos, self.yPos])
+            #pygame.draw.ellipse(screen, self.colour, [self.xPos, self.yPos, 50, 50])
+    def getPos(self):
+        return [self.xPos,self.yPos,self.colour]
         
 
 class player(pygame.sprite.Sprite):
@@ -186,10 +215,15 @@ def sendData():
     astroidPosList = []
     for a in astroids:
         astroidPosList.append(a.getPos())
+    speedyAstroidPosList = []
+    for a in speedyAstroids:
+        astroidPosList.append(a.getPos())
+
     playerData = {
         'pos' : [p.xPos,p.yPos],
         'bullets' : bulletPosList,
         'astroids' : astroidPosList,
+        'speedyAstroids' : speedyAstroidPosList,
         'inGame' : ingame
     }
     return n.sendr(json.dumps(playerData))
@@ -201,8 +235,10 @@ def sendData():
 #spawns the astroids  
 def spawn(data):
     if data['inGame'] == True:
-        currentAstroid = Astroid(astroidImg)
+        currentAstroid = Astroid(astroidImgs['defult'])
         astroids.append(currentAstroid)
+        currentSpeedyAstroid = speedyAstroid(astroidImgs['speedy'])
+        speedyAstroids.append(currentSpeedyAstroid)
     pass
 #draws the bullets from the server
 def drawServBullets(data):
@@ -212,11 +248,14 @@ def drawServBullets(data):
 #draws the astroids from the server
 def drawAstroids(data):
     for a in data['astroids']:
-        screen.blit (astroidImg,[a[0], a[1]])
+        screen.blit (astroidImgs['defult'],[a[0], a[1]])
         #pygame.draw.ellipse(screen, a[2], [a[0], a[1], 50, 50])
-        pass
+        print(data['speedyAstroids'])
+    for a in data['speedyAstroids']:
+        screen.blit (astroidImgs['speedy'],[a[0],a[1]])
+    pass
     
-def doAstroidCollision(a):
+def doAstroidCollision(a, value):
     global bullets
     global score
     found = False
@@ -227,7 +266,7 @@ def doAstroidCollision(a):
                         if i in range(int(a[0]),int(a[0]+50))and found == False:
                             bullet.alive = False
                             found = True
-                            score += 1
+                            score += value
 def doLocalAstroidCollision(a):
     global allBulletPos
     global score
@@ -292,9 +331,17 @@ while True:
         for a in astroids:
             astroidPosList.append(a.getPos())
         allAstroidPos = data['astroids'] + astroidPosList
+
+        speedyAstroidPosList = []
+        for a in speedyAstroids:
+            astroidPosList.append(a.getPos())
+        allSpeedyAstroidPos = data['speedyAstroids'] + speedyAstroidPosList
+
         for a in allAstroidPos:
-            doAstroidCollision(a)
+            doAstroidCollision(a,1)
         for a in astroids:
+            doLocalAstroidCollision(a)
+        for a in speedyAstroids:
             doLocalAstroidCollision(a)
         
         
@@ -315,6 +362,13 @@ while True:
                 newAstroids.append(astroid)
                 newAstroidList.append([astroid.xPos,astroid.yPos])
         astroids = newAstroids
+
+        newSpeedyAstroids = []
+        for a in speedyAstroids:
+            a.update()
+            if a.alive == True:
+                newSpeedyAstroids.append(a)
+        speedyAstroids = newSpeedyAstroids
 
         #score renderer
         font = pygame.font.SysFont('Calibri', 50, True, False)
