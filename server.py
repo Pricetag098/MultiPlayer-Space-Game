@@ -43,7 +43,9 @@ game_state =[
         'astroids' : [], 
         'speedyAstroids' : [],
         'player' : 2,
-        'inGame' : False
+        'inGame' : False,
+        'score' : 0,
+        'winner' : ''
     },
     {
         'pos':[255,500],
@@ -51,14 +53,15 @@ game_state =[
         'astroids' : [],
         'speedyAstroids' : [],
         'player' : 1,
-        'inGame' : False
+        'inGame' : False,
+        'score' : 0,
+        'winner' : ''
     }
 ]
 pos = [game_state[0]['pos'],game_state[1]['pos']]
 bullets = [game_state[0]['bullets']+game_state[1]['bullets']]
 
 
-print(game_state[0])
 game_state_as_str = json.dumps(game_state)
 #conn.send(game_state_as_str.encode('utf-8'))
 
@@ -74,7 +77,6 @@ def threaded_client(conn, player):
     temp = json.dumps(game_state[player])
     conn.send(str.encode(temp))
     reply = ""
-    test = False
     while True:
         try:
             strData = conn.recv(2048).decode()
@@ -92,6 +94,7 @@ def threaded_client(conn, player):
                 game_state[player]['astroids'] = data['astroids']
                 game_state[player]['speedyAstroids'] = data['speedyAstroids']
                 game_state[player]['inGame'] = data['inGame']
+                game_state[player]['score'] = data['score']
             except:
                 pass
             
@@ -143,6 +146,4 @@ while True:
     #global astroidPoses
 
     currentPlayer += 1
-
-
-    
+ 
