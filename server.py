@@ -6,7 +6,11 @@ import json
 import random
 import math
 
-ip = input('Ip: ')
+
+if len(sys.argv) > 1:
+    ip = sys.argv[1]
+else:
+    ip = input('Ip: ')
 
 server = ip
 port = 5555
@@ -35,7 +39,7 @@ def make_pos(tup):
 
 p1_bullets = []
 p2_bullets = []
-
+winner = ''
 game_state =[
     {
         'pos':[255,500],
@@ -58,6 +62,20 @@ game_state =[
         'winner' : ''
     }
 ]
+
+defultData = {
+        'pos':[255,500],
+        'bullets' : [],
+        'astroids' : [],
+        'speedyAstroids' : [],
+        'player' : 1,
+        'inGame' : False,
+        'score' : 0,
+        'winner' : ''
+    }
+
+
+defultVal = game_state
 pos = [game_state[0]['pos'],game_state[1]['pos']]
 bullets = [game_state[0]['bullets']+game_state[1]['bullets']]
 
@@ -72,6 +90,7 @@ astroidPoses = []
 gameTime = 0
 
 def threaded_client(conn, player):
+    global game_state
     #conn.send(str.encode(make_pos(pos[player])))
     print(game_state_as_str)
     temp = json.dumps(game_state[player])
@@ -100,7 +119,13 @@ def threaded_client(conn, player):
             
             #print(game_state)
 
-           
+            if data['score'] >= 100:
+                
+                game_state[0]['winner'] = str(player)
+                game_state[1]['winner'] = str(player)
+                game_state = defultVal
+                data = defultData
+        
 
             if not data:
                 print("Disconnected")

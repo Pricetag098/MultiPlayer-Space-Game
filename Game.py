@@ -3,6 +3,7 @@ import random
 import math
 from network import Network
 import json
+from time import sleep
 pygame.init()
 
 
@@ -14,24 +15,40 @@ WHITE    = ( 255, 255, 255)
 PI = 3.141592653
 
 
-astroidImgs = {
-    'defult' : pygame.image.load("assets\\Astroid.png"),
-    'speedy' : pygame.image.load("assets\\AltAstroid.png")
-}
+lastWinner = 'play a game first' 
 
+astroidImgs = {
+    'defult' : pygame.image.load("assets/Astroid.png"),
+    'speedy' : pygame.image.load("assets/AltAstroid.png")
+}
+sounds = {
+    'shoot' : pygame.mixer.Sound("assets/Pew.ogg"),
+    'shoot1' : pygame.mixer.Sound("assets/Pew1.ogg"),
+    'Explode' : pygame.mixer.Sound("assets/Explosion.ogg")
+}
 playerImgs = {
-'p1': pygame.image.load("assets\\TestShip.png"),
-'p2': pygame.image.load("assets\\TestShip2.png"),
-'null': pygame.image.load("assets\\NullShip.png")
+'p1': pygame.image.load("assets/TestShip.png"),
+'p2': pygame.image.load("assets/TestShip2.png"),
+'null': pygame.image.load("assets/NullShip.png")
 }
 #setup
 n = None
 size = (500, 600)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Pong")
+pygame.display.set_caption("Space Game")
 done = True
 clock = pygame.time.Clock()
 
+defultData = {
+        'pos':[255,500],
+        'bullets' : [],
+        'astroids' : [],
+        'speedyAstroids' : [],
+        'player' : 1,
+        'inGame' : False,
+        'score' : 0,
+        'winner' : ''
+    }
 
 spawnTimer = 30
 
@@ -192,9 +209,12 @@ class Bullet():
         if cannonFiring == True:
             self.x = x
             player.cannonFiring = False
+            sounds['shoot'].play()
+            
         elif cannonFiring == False:
             self.x = x +40
             player.cannonFiring = True
+            sounds['shoot1'].play()
         self.alive = True
         self.update()
     def update(self):
@@ -267,6 +287,7 @@ def doAstroidCollision(a, value):
                             bullet.alive = False
                             found = True
                             score += value
+                            sounds['Explode'].play()
 def doLocalAstroidCollision(a):
     global allBulletPos
     global score
@@ -279,30 +300,22 @@ def doLocalAstroidCollision(a):
                             found = True
                             a.alive = False
 
-def doPlayerCollision(player,aList):
-    global done
-    found = False
-    for a in aList:
-        for x in range(player.xPos, player.xPos + 50):
-            if x in range(int(a[0]),int(a[0])+100) and found == False:
-                for y in range(player.yPos,player.yPos+50):
-                    if y in range(a[1],a[1]+100) and found == False:
-                        found = True
-                        player.health-=1
-                        print(player.health)
 
-def doPlayerAstroidCollision(player,aList):
-    found = False
-    for a in aList:
-        for x in range(player.xPos, player.xPos + 50):
-            if x in range(int(a.xPos),int(a.xPos+100)) and found == False:
-                for y in range(player.yPos,player.yPos+50):
-                    if y in range(a.yPos,a.yPos+100) and found == False:
-                        found = True
-                        a.alive = False
-                        print(player.health)
-                        
-def drawMenu(ip): pass
+       
+def drawMenu(ip):
+    font = pygame.font.SysFont('Calibri', 75, True, False)
+    titleText = font.render('SPACE GAME', True, WHITE)
+    titleTextRect = titleText.get_rect(center=(500/2, 50))
+    screen.blit(titleText, titleTextRect)
+
+    winnerfont = pygame.font.SysFont('Calibri', 50, True, False)
+    winnerText = winnerfont.render('The last winner is:', True, WHITE)
+    winnerTextRect = winnerText.get_rect(center=(500/2, 150))
+    screen.blit(winnerText,winnerTextRect)
+
+    Text = winnerfont.render(lastWinner, True, WHITE)
+    TextRect = winnerText.get_rect(center=(500/2, 200))
+    screen.blit(Text,TextRect)
                         
 def drawScores(score, location):
     font = pygame.font.SysFont('Calibri', 50, True, False)
@@ -313,9 +326,13 @@ def drawScores(score, location):
 startPos = [225,500]
 p = player(startPos[0],startPos[1],playerImgs)
 p2 = player(255,500,playerImgs)
+
+ip = None
+drawMenu(ip)
 ip = input('Ip: ')
 n = Network(ip)
 
+test = True
 # -------- Main Program Loop -----------
 while True:
     for event in pygame.event.get(): 
@@ -324,7 +341,10 @@ while True:
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 done = False
+                
     #screen.blit(testIMG, [100, 100])
+    screen.fill(BLACK)
+    drawMenu(ip)
     ingame = False     
     while done == False:
         
@@ -374,8 +394,7 @@ while True:
             doLocalAstroidCollision(a)
         for a in speedyAstroids:
             doLocalAstroidCollision(a)
-        doPlayerCollision(p,allAstroidPos)
-        doPlayerCollision(p,allSpeedyAstroidPos)
+        
         #doPlayerAstroidCollision(p,astroids)
         #doPlayerAstroidCollision(p2,astroids)
         
@@ -431,6 +450,17 @@ while True:
             spawn(data)
             spawnTimer = 30
         
+        if data['winner'] != '' and test == True:
+            print(data['winner'])
+            done = True
+            lastWinner ='Player '+ str(+ int(data['winner']) + 1)
+            
+            astroids = []
+            bullets = []
+            score = 0
+            data = defultData
+            test = False
+            sleep(1)
 
 
         
