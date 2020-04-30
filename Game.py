@@ -35,7 +35,7 @@ playerImgs = {
 n = None
 size = (500, 600)
 screen = pygame.display.set_mode(size)
-pygame.display.set_caption("Space Game")
+pygame.display.set_caption("Merc Force")
 done = True
 clock = pygame.time.Clock()
 
@@ -304,7 +304,7 @@ def doLocalAstroidCollision(a):
        
 def drawMenu(ip):
     font = pygame.font.SysFont('Calibri', 75, True, False)
-    titleText = font.render('SPACE GAME', True, WHITE)
+    titleText = font.render('Merc Force', True, WHITE)
     titleTextRect = titleText.get_rect(center=(500/2, 50))
     screen.blit(titleText, titleTextRect)
 
